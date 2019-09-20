@@ -195,9 +195,10 @@
         <global token="#VER#" string="Version" />
         <global token="#USER#" string="User Version" />
         <global token="#BSVER#" string="Header\BS Header\BS Version" />
+        <!-- <global token="#BSVER#" string="BS Header\BS Version" /> -->
     </token>
 
-    <token name="operator" attrs="cond vercond arr1 arr2 arg calc">
+    <token name="operator" attrs="cond vercond arr1 arr2 arg">
         All Operators except for unary not (!), parentheses, and member of (\)
         NOTE: These can be ignored entirely by string substitution and dealt with directly.
         NOTE: These must be listed after the above tokens so that they replace last. For example, `verexpr` uses these tokens.
@@ -285,7 +286,7 @@
     <basic name="float" integral="false" size="4">
         A standard 32-bit floating point number.
     </basic>
-
+    
     <basic name="hfloat" integral="false" size="2" convertible="float">
         A 16-bit floating point number.
     </basic>
@@ -1591,16 +1592,16 @@
     </compound>
 
     <compound name="NiTFixedStringMapItem" generic="true">
-        Currently, float must be a basic type due to nif.xml restrictions.
+        Currently, #T# must be a basic type due to nif.xml restrictions.
         <field name="String" type="NiFixedString" />
-        <field name="Value" type="float" />
+        <field name="Value" type="#T#" />
     </compound>
 
     <compound name="NiTFixedStringMap" generic="true">
         A mapping or hash table between NiFixedString keys and a generic value.
-        Currently, float must be a basic type due to nif.xml restrictions.
+        Currently, #T# must be a basic type due to nif.xml restrictions.
         <field name="Num Strings" type="uint" />
-        <field name="Strings" type="NiTFixedStringMapItem" template="float" arr1="Num Strings" />
+        <field name="Strings" type="NiTFixedStringMapItem" template="#T#" arr1="Num Strings" />
     </compound>
 
     <compound name="ByteArray">
@@ -1914,9 +1915,9 @@
     <compound name="Key" generic="true">
         A generic key with support for interpolation. Type 1 is normal linear interpolation, type 2 has forward and backward tangents, and type 3 has tension, bias and continuity arguments. Note that color4 and byte always seem to be of type 1.
         <field name="Time" type="float">Time of the key.</field>
-        <field name="Value" type="float">The key value.</field>
-        <field name="Forward" type="float" cond="#ARG# == 2">Key forward tangent.</field>
-        <field name="Backward" type="float" cond="#ARG# == 2">The key backward tangent.</field>
+        <field name="Value" type="#T#">The key value.</field>
+        <field name="Forward" type="#T#" cond="#ARG# == 2">Key forward tangent.</field>
+        <field name="Backward" type="#T#" cond="#ARG# == 2">The key backward tangent.</field>
         <field name="TBC" type="TBC" cond="#ARG# == 3">The TBC of the key.</field>
     </compound>
 
@@ -1924,14 +1925,14 @@
         Array of vector keys (anything that can be interpolated, except rotations).
         <field name="Num Keys" type="uint">Number of keys in the array.</field>
         <field name="Interpolation" type="KeyType" cond="Num Keys != 0">The key type.</field>
-        <field name="Keys" type="Key" arg="Interpolation" template="float" arr1="Num Keys">The keys.</field>
+        <field name="Keys" type="Key" arg="Interpolation" template="#T#" arr1="Num Keys">The keys.</field>
     </compound>
 
     <compound name="QuatKey" generic="true">
-        A special version of the key type used for quaternions. Never has tangents. float should always be Quaternion.
+        A special version of the key type used for quaternions. Never has tangents. #T# should always be Quaternion.
         <field name="Time" type="float" ver2="10.1.0.0">Time the key applies.</field>
         <field name="Time" type="float" cond="#ARG# != 4" ver1="10.1.0.106">Time the key applies.</field>
-        <field name="Value" type="float" cond="#ARG# != 4">Value of the key.</field>
+        <field name="Value" type="#T#" cond="#ARG# != 4">Value of the key.</field>
         <field name="TBC" type="TBC" cond="#ARG# == 3">The TBC of the key.</field>
     </compound>
 
@@ -3343,9 +3344,8 @@
 
     <niobject name="NiAVObject" abstract="true" inherit="NiObjectNET" module="NiMain">
         Abstract audio-visual base class from which all of Gamebryo's scene graph objects inherit.
-        <add name="Flags" type="Flags" ver1="3.0">Some flags; commonly 0x000C or 0x000A.</add>
-        <add name="Unknown Short 1" type="ushort" default="8" ver1="20.2.0.7" vercond="(User Version >= 11) &amp;&amp; (User Version 2 > 26)" >Unknown Flag</add>
- <!--        <field name="Flags" type="uint" default="0x8000E" vercond="#BSVER# #GT# 26">
+        <field name="Flags" type="ushort" ver1="3.0" vercond="#BSVER# #LTE# 26">Basic flags for AV objects.</field>
+        <field name="Flags" type="uint" default="0x8000E" vercond="#BSVER# #GT# 26">
             Basic flags for AV objects. For Bethesda streams above 26 only.
             ALL: FO4 lacks the 0x80000 flag always. Skyrim lacks it sometimes.
             BSTreeNode: 0x8080E (pre-FO4), 0x400E (FO4)
@@ -3386,7 +3386,6 @@
             <default type="BSLODTriShape" value="0x800000E" versions="V20_2_0_7_SSE" />
             <default type="BSLODTriShape" value="0x808000E" versions="V20_2_0_7_SKY" />
         </field>
-        <field name="Flags" type="ushort" ver1="3.0" vercond="#BSVER# #LTE# 26">Basic flags for AV objects.</field> -->
         <field name="Translation" type="Vector3">The translation vector.</field>
         <field name="Rotation" type="Matrix33">The rotation part of the transformation matrix.</field>
         <field name="Scale" type="float" default="1.0">Scaling part (only uniform scaling is supported).</field>
@@ -3399,24 +3398,6 @@
         <field name="Bounding Volume" type="BoundingVolume" cond="Has Bounding Volume" ver1="3.0" ver2="4.2.2.0" />
         <field name="Collision Object" type="Ref" template="NiCollisionObject" ver1="10.0.1.0" />
     </niobject>
-	
-	<!-- 
-    <niobject name="NiAVObject" abstract="1" inherit="NiObjectNET">
-        Generic node object.
-        <add name="Flags" type="Flags" ver1="3.0">Some flags; commonly 0x000C or 0x000A.</add>
-        <add name="Unknown Short 1" type="ushort" default="8" ver1="20.2.0.7" vercond="(User Version >= 11) &amp;&amp; (User Version 2 > 26)" >Unknown Flag</add>
-        <add name="Translation" type="Vector3">The translation vector.</add>
-        <add name="Rotation" type="Matrix33">The rotation part of the transformation matrix.</add>
-        <add name="Scale" type="float" default="1.0">Scaling part (only uniform scaling is supported).</add>
-        <add name="Velocity" type="Vector3" ver2="4.2.2.0">Unknown function. Always seems to be (0, 0, 0)</add>
-        <add name="Num Properties" type="uint" vercond="((Version &lt; 20.2.0.7) || (User Version &lt;= 11))">The number of property objects referenced.</add>
-        <add name="Properties" type="Ref" template="NiProperty" arr1="Num Properties" vercond="((Version &lt; 20.2.0.7) || (User Version &lt;= 11))">List of node properties.</add>
-        <add name="Unknown 1" type="uint" arr1="4" ver2="2.3">Always 2,0,2,0.</add>
-        <add name="Unknown 2" type="byte" ver2="2.3">0 or 1.</add>
-        <add name="Has Bounding Volume" type="bool" ver1="3.0" ver2="4.2.2.0" />
-        <add name="Bounding Volume" type="BoundingVolume" cond="Has Bounding Volume" ver1="3.0" ver2="4.2.2.0" />
-        <add name="Collision Object" type="Ref" template="NiCollisionObject" ver1="10.0.1.0" />
-    </niobject> -->
 
     <niobject name="NiDynamicEffect" abstract="true" inherit="NiAVObject" module="NiMain">
         Abstract base class for dynamic effects such as NiLights or projected texture effects.
@@ -5018,7 +4999,7 @@
 		<field name="Vertex Size" type="uint" calc="(Vertex Desc #BITAND# 0xF) #MUL# 4" ver1="20.2.0.7" ver2="20.2.0.7" vercond="#BS_SSE#" />
 		<field name="Vertex Desc" type="BSVertexDesc" ver1="20.2.0.7" ver2="20.2.0.7" vercond="#BS_SSE#" />
 		<field name="Vertex Data" type="BSVertexDataSSE" arg="Data Size" arr1="Data Size / Vertex Size" cond="Data Size #GT# 0" ver1="20.2.0.7" ver2="20.2.0.7" vercond="#BS_SSE#" />
-<!-- 		<field name="Vertex Data" type="BSVertexDataSSE" arg="Vertex Desc #RSH# 44" arr1="Data Size / Vertex Size" cond="Data Size #GT# 0" ver1="20.2.0.7" ver2="20.2.0.7" vercond="#BS_SSE#" /> -->
+		<!-- <field name="Vertex Data" type="BSVertexDataSSE" arg="Vertex Desc #RSH# 44" arr1="Data Size / Vertex Size" cond="Data Size #GT# 0" ver1="20.2.0.7" ver2="20.2.0.7" vercond="#BS_SSE#" /> -->
 		<field name="Partitions" type="SkinPartition" arr1="Num Partitions" />
     </niobject>
 
